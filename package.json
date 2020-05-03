@@ -1,0 +1,30 @@
+{
+  "name": "pleasant-logs",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "lint": "eslint 'src/**/*.ts' --quiet --fix",
+    "lint:ci": "eslint 'src/**/*.ts'"
+  },
+  "repository": "git@github.com:NWylynko/pleasant-logs.git",
+  "author": "Nick Wylynko <nick1014375@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^13.13.4",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^2.0.5",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.8.3"
+  }
+}
