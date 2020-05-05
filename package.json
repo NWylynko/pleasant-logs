@@ -1,11 +1,13 @@
 {
   "name": "pleasant-logs",
-  "version": "0.1.0",
-  "main": "src/index.ts",
+  "version": "0.2.0",
+  "main": "dist/index.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
     "demo": "ts-node src/demo.ts",
     "build": "tsc",
+    "prepublish": "tsc",
     "lint": "eslint 'src/**/*.ts' --fix",
     "lint:ci": "eslint 'src/**/*.ts'"
   },
