@@ -1,6 +1,6 @@
 {
   "name": "pleasant-logs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "dist/index.ts",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -29,5 +29,8 @@
     "prettier": "^2.0.5",
     "ts-node": "^8.10.1",
     "typescript": "^3.8.3"
-  }
+  },
+  "files": [
+    "dist/**/*"
+  ]
 }
