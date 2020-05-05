@@ -4,8 +4,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "demo": "ts-node src/demo.ts",
     "build": "tsc",
-    "lint": "eslint 'src/**/*.ts' --quiet --fix",
+    "lint": "eslint 'src/**/*.ts' --fix",
     "lint:ci": "eslint 'src/**/*.ts'"
   },
   "repository": "git@github.com:NWylynko/pleasant-logs.git",

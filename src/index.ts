@@ -1,12 +1,14 @@
+const readline = require("readline");
+
 const RESET = "\x1b[0m";
 const Dim = "\x1b[2m";
 
-const Black = "\x1b[30m";
+// const Black = "\x1b[30m";
 const Red = "\x1b[31m";
 const Green = "\x1b[32m";
 const Yellow = "\x1b[33m";
-const Blue = "\x1b[34m";
-const Magenta = "\x1b[35m";
+// const Blue = "\x1b[34m";
+// const Magenta = "\x1b[35m";
 const Cyan = "\x1b[36m";
 const White = "\x1b[37m";
 
@@ -22,115 +24,142 @@ const KnightRider = [
   "▪▪▪▪▪▪▪",
 ];
 
-class Logger {
+export default class Logger {
   id: string;
   start: number;
+  watchers: any[];
+  logOut: (x: string) => boolean;
+  logErr: (x: string) => boolean;
 
   constructor(id: string) {
     this.id = id;
     this.start = Date.now();
+    this.watchers = [];
+    this.logOut = (x: string) => process.stdout.write(`${x}${RESET}\n`);
+    this.logErr = (x: string) => process.stderr.write(`${x}${RESET}\n`);
   }
 
-  info(x: string, noNewLine: boolean = false) {
-    this.log(this.firstPart(White, "INFO") + "ℹ " + x, noNewLine);
+  public info(x: string, pushUp: boolean = true) {
+    if (pushUp) this.pushWatchersUp();
+    this.logOut(`${this.firstPart(White, "INFO")}ℹ ${x}`);
   }
 
-  success(x: string, noNewLine: boolean = false) {
-    this.log(this.firstPart(Green, "SUCCESS") + "✔ " + x, noNewLine);
+  public success(x: string, pushUp: boolean = true) {
+    if (pushUp) this.pushWatchersUp();
+    this.logOut(`${this.firstPart(Green, "SUCCESS")}✔ ${x}`);
   }
 
-  warning(x: string, noNewLine: boolean = false) {
-    this.log(this.firstPart(Yellow, "WARNING") + "! " + x, noNewLine);
+  public warning(x: string, pushUp: boolean = true) {
+    if (pushUp) this.pushWatchersUp();
+    this.logErr(`${this.firstPart(Yellow, "WARNING")}! ${x}`);
   }
 
-  error(x: string, noNewLine: boolean = false) {
-    this.log(this.firstPart(Red, "ERROR") + "☠ " + x, noNewLine);
+  public error(x: string, pushUp: boolean = true) {
+    if (pushUp) this.pushWatchersUp();
+    this.logErr(`${this.firstPart(Red, "ERROR")}☠ ${x}`);
   }
 
-  fail(x: string, noNewLine: boolean = false) {
-    this.log(this.firstPart(Red, "FAIL") + "✘ " + x, noNewLine);
+  public fail(x: string, pushUp: boolean = true) {
+    if (pushUp) this.pushWatchersUp();
+    this.logErr(`${this.firstPart(Red, "FAIL")}✘ ${x}`);
   }
 
-  watch(x: string, promise: Promise<any>) {
-    this.log(
-      this.firstPart(Cyan, "WATCH") + "⧗ " + KnightRider[0] + " " + x,
-      true
-    );
-    let animationN = 0;
-    const interval = setInterval(() => {
-      if (animationN >= 6) {
-        animationN = -1;
-      }
-      animationN++;
-      process.stdout.cursorTo(0);
-      this.log(
-        this.firstPart(Cyan, "WATCH") +
-          "⧗ " +
-          KnightRider[animationN] +
-          " " +
-          x,
-        true
-      );
-    }, 250);
-
-    promise
-      .then(() => {
-        clearInterval(interval);
-        process.stdout.cursorTo(0);
-        this.success(KnightRider[7] + " " + x);
-      })
-      .catch((reason) => {
-        clearInterval(interval);
-        process.stdout.cursorTo(0);
-        this.error(KnightRider[7] + " " + x + " | " + reason);
-      });
+  public watch(x: string, promise: () => Promise<any>) {
+    this.pushWatchersUp();
+    const watcher = new Watch(this, x, promise);
+    this.watchers.push(watcher);
+    return watcher;
   }
 
-  firstPart(color: string, str: string): string {
-    const TimeSinceStart = Date.now() - this.start;
-    return (
-      color +
-      str +
-      White +
-      Dim +
-      tab +
-      " | " +
-      this.id +
-      " +" +
-      TimeSinceStart +
-      tab +
-      " | " +
-      RESET +
-      color
-    );
+  private firstPart(
+    color: string,
+    str: string,
+    start: number = this.start
+  ): string {
+    return `${color}${str}${White}${Dim}${tab} | ${
+      this.id
+    } +${this.TimeSinceStart(start)}ms${tab} | ${RESET}${color} `;
   }
 
-  log(x: string, noNewLine: boolean = false) {
-    let log = x + RESET;
-    if (!noNewLine) {
-      log += "\n";
+  private TimeSinceStart = (start: number = this.start) => Date.now() - start;
+
+  private pushWatchersUp() {
+    for (let i = 0; i < this.watchers.length; i++) {
+      this.watchers[i].pushUp();
     }
-    process.stdout.write(log);
   }
 }
 
-// const rejectPromise = new Promise((resolve, reject) =>
-//   setTimeout(() => {
-//     reject(new Error("reason"));
-//   }, 2000)
-// );
+class Watch {
+  logger: any;
+  animationN: number;
+  tick: number;
+  row: number;
+  timer: number;
+  constructor(logger: any, x: string, promise: () => Promise<any>) {
+    this.logger = logger;
+    this.row = -1;
+    this.timer = Date.now();
+    this.animationN = 0;
+    this.tick = 0;
 
-const resolvePromise = new Promise((resolve, reject) =>
-  setTimeout(() => {
-    resolve();
-  }, 5000)
-);
+    this.moveToBottom();
+    this.logger.logOut(
+      `${this.logger.firstPart(Cyan, "WATCH")}⧗ ${KnightRider[0]} [0ms] ${x}`
+    ); // inital write
 
-const log = new Logger("test-logger");
+    const interval = setInterval(() => {
+      this.tick++;
+      if (this.tick > 10) {
+        this.animationN++;
+        this.tick = 0;
+      }
+      if (this.animationN >= 6) {
+        this.animationN = 0;
+      }
+      this.moveToRow();
+      this.logger.logOut(
+        `${this.logger.firstPart(Cyan, "WATCH")}⧗ ${
+          KnightRider[this.animationN]
+        } [${this.logger.TimeSinceStart(this.timer)}ms] ${x}` // every "frame"
+      );
+      this.moveToBottom();
+    }, 10);
 
-log.info("this is an info log");
-log.success("this is a success log");
-log.warning("this is a warning log");
-log.error("this is a error log");
-log.fail("this is a fail log");
-log.watch("this is a promise (will resolve)", resolvePromise);
+    promise()
+      .then((output) => {
+        clearInterval(interval);
+        this.moveToRow();
+        this.logger.success(
+          `${KnightRider[7]} [${this.logger.TimeSinceStart(
+            this.timer
+          )}ms] ${x} | ${typeof output === "string" ? output : typeof output}`,
+          false
+        );
+        this.moveToBottom();
+      })
+      .catch((reason: any) => {
+        clearInterval(interval);
+        this.moveToRow();
+        this.logger.error(
+          `${KnightRider[7]} [${this.logger.TimeSinceStart(
+            this.timer
+          )}ms] ${x} | ${reason}`,
+          false
+        );
+        this.moveToBottom();
+      });
+  }
+
+  private moveToBottom() {
+    readline.moveCursor(process.stdout, 0, this.logger.watchers.length);
+  }
+
+  private moveToRow() {
+    readline.moveCursor(process.stdout, 0, this.row);
+  }
+
+  public pushUp() {
+    this.row = this.row - 1;
+  }
+}
