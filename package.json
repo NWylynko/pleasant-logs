@@ -1,7 +1,7 @@
 {
   "name": "pleasant-logs",
-  "version": "0.2.1",
-  "main": "dist/index.ts",
+  "version": "0.2.3",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
