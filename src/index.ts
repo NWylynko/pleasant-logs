@@ -1,4 +1,4 @@
-const readline = require("readline");
+import readline from "readline";
 
 const RESET = "\x1b[0m";
 const Dim = "\x1b[2m";
@@ -90,6 +90,7 @@ export default class Logger {
   }
 }
 
+// module.exports = Logger;
 class Watch {
   logger: any;
   animationN: number;
