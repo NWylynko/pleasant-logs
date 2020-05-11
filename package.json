@@ -1,11 +1,11 @@
 {
   "name": "pleasant-logs",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "demo": "cd demo && yarn && node index.js",
+    "demo": "node demo.js",
     "build": "tsc",
     "prepublish": "tsc",
     "lint": "eslint 'src/**/*.ts' --fix",

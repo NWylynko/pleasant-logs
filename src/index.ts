@@ -1,19 +1,15 @@
 import readline from "readline";
 
-const RESET = "\x1b[0m";
-const Dim = "\x1b[2m";
+import defaultConfig, {
+  RESET,
+  dim,
+  tab,
+  colors as defaultColors,
+  Config,
+  Colors,
+} from "./config.js";
 
-// const Black = "\x1b[30m";
-const Red = "\x1b[31m";
-const Green = "\x1b[32m";
-const Yellow = "\x1b[33m";
-// const Blue = "\x1b[34m";
-// const Magenta = "\x1b[35m";
-const Cyan = "\x1b[36m";
-const White = "\x1b[37m";
-
-const tab = "\t";
-const KnightRider = [
+const LoadingBar = [
   "▪▪▫▫▫▫▫",
   "▪▪▪▫▫▫▫",
   "▫▪▪▪▫▫▫",
@@ -24,61 +20,105 @@ const KnightRider = [
   "▪▪▪▪▪▪▪",
 ];
 
-export default class Logger {
+interface Logger {
   id: string;
+  config: Config;
+  colors: Colors;
   start: number;
   watchers: any[];
   logOut: (x: string) => boolean;
   logErr: (x: string) => boolean;
+  info(...args: string[]): void;
+  success(...args: string[]): void;
+  warning(...args: string[]): void;
+  error(...args: string[]): void;
+  fail(...args: string[]): void;
+  watch(x: string, promise: () => Promise<any>): Watch;
+  _success(...args: string[]): void;
+  _error(...args: string[]): void;
+}
 
-  constructor(id: string) {
+class Logger {
+  constructor(
+    id: string,
+    config: Config = defaultConfig,
+    colors: Colors = defaultColors
+  ) {
     this.id = id;
+    this.config = config;
+    this.colors = colors;
     this.start = Date.now();
     this.watchers = [];
-    this.logOut = (x: string) => process.stdout.write(`${x}${RESET}\n`);
-    this.logErr = (x: string) => process.stderr.write(`${x}${RESET}\n`);
+    this.logOut = (...args: string[]) =>
+      process.stdout.write(`${args.join(" ")}${RESET}\n`);
+    this.logErr = (...args: string[]) =>
+      process.stderr.write(`${args.join(" ")}${RESET}\n`);
   }
 
-  public info(x: string, pushUp: boolean = true) {
-    if (pushUp) this.pushWatchersUp();
-    this.logOut(`${this.firstPart(White, "INFO")}ℹ ${x}`);
-  }
+  public info = (...args: string[]) => {
+    this.pushWatchersUp();
+    this.logOut(
+      `${this.firstPart(this.config.info.color, this.config.info.text)}${
+        this.config.info.icon
+      } ${args}`
+    );
+  };
 
-  public success(x: string, pushUp: boolean = true) {
-    if (pushUp) this.pushWatchersUp();
-    this.logOut(`${this.firstPart(Green, "SUCCESS")}✔ ${x}`);
-  }
+  public success = (...args: string[]) => {
+    this.pushWatchersUp();
+    this._success(...args);
+  };
 
-  public warning(x: string, pushUp: boolean = true) {
-    if (pushUp) this.pushWatchersUp();
-    this.logErr(`${this.firstPart(Yellow, "WARNING")}! ${x}`);
-  }
+  public warning = (...args: string[]) => {
+    this.pushWatchersUp();
+    this.logErr(
+      `${this.firstPart(this.config.warning.color, this.config.warning.text)}${
+        this.config.warning.icon
+      } ${args}`
+    );
+  };
 
-  public error(x: string, pushUp: boolean = true) {
-    if (pushUp) this.pushWatchersUp();
-    this.logErr(`${this.firstPart(Red, "ERROR")}☠ ${x}`);
-  }
+  public error = (...args: string[]) => {
+    this.pushWatchersUp();
+    this._error(...args);
+  };
 
-  public fail(x: string, pushUp: boolean = true) {
-    if (pushUp) this.pushWatchersUp();
-    this.logErr(`${this.firstPart(Red, "FAIL")}✘ ${x}`);
-  }
+  public fail = (...args: string[]) => {
+    this.pushWatchersUp();
+    this.logErr(
+      `${this.firstPart(this.config.fail.color, this.config.fail.text)}${
+        this.config.fail.icon
+      } ${args}`
+    );
+  };
 
-  public watch(x: string, promise: () => Promise<any>) {
+  public watch = (x: string, promise: () => Promise<any>) => {
     this.pushWatchersUp();
     const watcher = new Watch(this, x, promise);
     this.watchers.push(watcher);
     return watcher;
-  }
+  };
 
-  private firstPart(
-    color: string,
-    str: string,
-    start: number = this.start
-  ): string {
-    return `${color}${str}${White}${Dim}${tab} | ${
+  public _success = (...args: string[]) => {
+    this.logOut(
+      `${this.firstPart(this.config.success.color, this.config.success.text)}${
+        this.config.success.icon
+      } ${args}`
+    );
+  };
+
+  public _error = (...args: string[]) => {
+    this.logErr(
+      `${this.firstPart(this.config.error.color, this.config.error.text)}${
+        this.config.fail.icon
+      } ${args}`
+    );
+  };
+
+  private firstPart(color: string, str: string): string {
+    return `${color}${str}${this.colors.white}${dim}${tab} | ${
       this.id
-    } +${this.TimeSinceStart(start)}ms${tab} | ${RESET}${color} `;
+    } +${this.TimeSinceStart(this.start)}ms${tab} | ${RESET}${color} `;
   }
 
   private TimeSinceStart = (start: number = this.start) => Date.now() - start;
@@ -90,23 +130,36 @@ export default class Logger {
   }
 }
 
-// module.exports = Logger;
-class Watch {
+export default Logger;
+
+interface Watch {
   logger: any;
+  colors: Colors;
+  config: Config;
   animationN: number;
   tick: number;
   row: number;
   timer: number;
+  firstPart: string;
+  pushUp(): void;
+}
+class Watch {
   constructor(logger: any, x: string, promise: () => Promise<any>) {
     this.logger = logger;
+    this.config = this.logger.config;
+    this.colors = this.logger.colors;
+
     this.row = -1;
     this.timer = Date.now();
     this.animationN = 0;
     this.tick = 0;
-
+    this.firstPart = this.logger.firstPart(
+      this.config.watch.color,
+      this.config.watch.text
+    );
     this.moveToBottom();
     this.logger.logOut(
-      `${this.logger.firstPart(Cyan, "WATCH")}⧗ ${KnightRider[0]} [0ms] ${x}`
+      `${this.firstPart}${this.config.watch.icon} ${LoadingBar[0]} [0ms] ${x}`
     ); // inital write
 
     const interval = setInterval(() => {
@@ -120,8 +173,8 @@ class Watch {
       }
       this.moveToRow();
       this.logger.logOut(
-        `${this.logger.firstPart(Cyan, "WATCH")}⧗ ${
-          KnightRider[this.animationN]
+        `${this.firstPart}${this.config.watch.icon} ${
+          LoadingBar[this.animationN]
         } [${this.logger.TimeSinceStart(this.timer)}ms] ${x}` // every "frame"
       );
       this.moveToBottom();
@@ -131,22 +184,20 @@ class Watch {
       .then((output) => {
         clearInterval(interval);
         this.moveToRow();
-        this.logger.success(
-          `${KnightRider[7]} [${this.logger.TimeSinceStart(
+        this.logger._success(
+          `${LoadingBar[7]} [${this.logger.TimeSinceStart(
             this.timer
-          )}ms] ${x} | ${typeof output === "string" ? output : typeof output}`,
-          false
+          )}ms] ${x} | ${typeof output === "string" ? output : typeof output}`
         );
         this.moveToBottom();
       })
       .catch((reason: any) => {
         clearInterval(interval);
         this.moveToRow();
-        this.logger.error(
-          `${KnightRider[7]} [${this.logger.TimeSinceStart(
+        this.logger._error(
+          `${LoadingBar[7]} [${this.logger.TimeSinceStart(
             this.timer
-          )}ms] ${x} | ${reason}`,
-          false
+          )}ms] ${x} | ${reason}`
         );
         this.moveToBottom();
       });

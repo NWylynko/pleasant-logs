@@ -1,4 +1,4 @@
-import Logger from "../dist/index.js";
+import Logger from "./dist/index.js";
 const log = new Logger("test-logger");
 
 const rejectPromise2 = () => {
@@ -41,7 +41,7 @@ log.error("this is a error log");
 log.fail("this is a fail log");
 log.watch("this is a promise (will resolve) 1", resolvePromise);
 log.watch("this is a promise (will reject 2000ms)", rejectPromise2);
-log.info("logged during watchers " + log.watchers.length);
+log.info("logged during watchers", log.watchers.length);
 // log.info("logged during watchers 2 " + log.watchers.length);
 log.watch("this is a promise (will reject 5000ms)", rejectPromise5);
 setTimeout(
