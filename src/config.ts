@@ -26,7 +26,7 @@ export const tab: string = "\t";
 
 interface method {
   text: string;
-  color: string;
+  color: color;
   icon: string;
 }
 export interface Config {
@@ -38,13 +38,15 @@ export interface Config {
   watch: method;
 }
 
+type color = string;
+
 export interface Colors {
-  white: string;
-  green: string;
-  yellow: string;
-  red: string;
-  cyan: string;
-  black: string;
-  Blue: string;
-  Magenta: string;
+  white: color;
+  green: color;
+  yellow: color;
+  red: color;
+  cyan: color;
+  black: color;
+  Blue: color;
+  Magenta: color;
 }

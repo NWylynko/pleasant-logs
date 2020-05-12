@@ -5,7 +5,9 @@ import defaultConfig, {
   dim,
   tab,
   colors as defaultColors,
+  // eslint-disable-next-line no-unused-vars
   Config,
+  // eslint-disable-next-line no-unused-vars
   Colors,
 } from "./config.js";
 
@@ -148,7 +150,6 @@ class Watch {
     this.logger = logger;
     this.config = this.logger.config;
     this.colors = this.logger.colors;
-
     this.row = -1;
     this.timer = Date.now();
     this.animationN = 0;
@@ -175,7 +176,7 @@ class Watch {
       this.logger.logOut(
         `${this.firstPart}${this.config.watch.icon} ${
           LoadingBar[this.animationN]
-        } [${this.logger.TimeSinceStart(this.timer)}ms] ${x}` // every "frame"
+        } [${this.coloredCounter()}${this.config.watch.color}] ${x}` // every "frame"
       );
       this.moveToBottom();
     }, 10);
@@ -185,9 +186,9 @@ class Watch {
         clearInterval(interval);
         this.moveToRow();
         this.logger._success(
-          `${LoadingBar[7]} [${this.logger.TimeSinceStart(
-            this.timer
-          )}ms] ${x} | ${typeof output === "string" ? output : typeof output}`
+          `${LoadingBar[7]} [${this.coloredCounter()}${
+            this.config.success.color
+          }] ${x} | ${typeof output === "string" ? output : typeof output}`
         );
         this.moveToBottom();
       })
@@ -195,12 +196,23 @@ class Watch {
         clearInterval(interval);
         this.moveToRow();
         this.logger._error(
-          `${LoadingBar[7]} [${this.logger.TimeSinceStart(
-            this.timer
-          )}ms] ${x} | ${reason}`
+          `${LoadingBar[7]} [${this.coloredCounter()}${
+            this.config.error.color
+          }] ${x} | ${reason}`
         );
         this.moveToBottom();
       });
+  }
+
+  private coloredCounter() {
+    const timer = this.logger.TimeSinceStart(this.timer);
+    if (timer < 10) {
+      return `${this.colors.green}${timer}ms`;
+    } else if (timer < 50) {
+      return `${this.colors.yellow}${timer}ms`;
+    } else {
+      return `${this.colors.red}${timer}ms`;
+    }
   }
 
   private moveToBottom() {

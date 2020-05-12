@@ -44,6 +44,17 @@ log.watch("this is a promise (will reject 2000ms)", rejectPromise2);
 log.info("logged during watchers", log.watchers.length);
 // log.info("logged during watchers 2 " + log.watchers.length);
 log.watch("this is a promise (will reject 5000ms)", rejectPromise5);
+log.watch(
+  "this is a promise (will resolve)",
+  () => new Promise((resolve, reject) => resolve("quick"))
+);
+log.watch(
+  "this is a promise (will resolve 20ms)",
+  () =>
+    new Promise((resolve, reject) =>
+      setTimeout(() => resolve("little slower"), 20)
+    )
+);
 setTimeout(
   () => log.watch("this is a promise (will resolve) 2", resolvePromise1),
   1000
