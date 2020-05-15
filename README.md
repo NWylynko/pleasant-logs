@@ -1,7 +1,7 @@
 # pleasant-logs
 Colourful nice logs for javascript
 
-[npmjs.com/package/pleasant-logs](https://www.npmjs.com/package/pleasant-logs)
+[![NPM](https://nodei.co/npm/pleasant-logs.png)](https://www.npmjs.com/package/pleasant-logs)
 
 ```npm i pleasant-logs```
 
