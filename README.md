@@ -4,9 +4,13 @@ Colourful nice logs for javascript
 
 [![NPM](https://nodei.co/npm/pleasant-logs.png)](https://www.npmjs.com/package/pleasant-logs)
 
-```npm i pleasant-logs```
+```bash
+npm i pleasant-logs
+```
 
-```yarn add pleasant-logs```
+```bash
+yarn add pleasant-logs
+```
 
 ```javascript
 
