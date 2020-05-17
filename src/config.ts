@@ -9,13 +9,30 @@ export const colors: Colors = {
   Magenta: "\x1b[35m",
 };
 
+export const backgroundColors: Colors = {
+  white: "\x1b[47m",
+  green: "\x1b[42m",
+  yellow: "\x1b[43m",
+  red: "\x1b[41m",
+  cyan: "\x1b[46m",
+  black: "\x1b[40m",
+  Blue: "\x1b[44m",
+  Magenta: "\x1b[44m",
+};
+
 const config: Config = {
-  info: { text: "INFO", color: colors.white, icon: "ℹ" },
-  success: { text: "SUCCESS", color: colors.green, icon: "✔" },
-  warning: { text: "WARNING", color: colors.yellow, icon: "!" },
-  error: { text: "ERROR", color: colors.red, icon: "☠" },
-  fail: { text: "FAIL", color: colors.red, icon: "✘" },
-  watch: { text: "WATCH", color: colors.cyan, icon: "⧗" },
+  info: { prefix: "INFO", color: colors.white, icon: "ℹ" },
+  success: { prefix: "SUCCESS", color: colors.green, icon: "✔" },
+  warning: { prefix: "WARNING", color: colors.yellow, icon: "!" },
+  error: { prefix: "ERROR", color: colors.red, icon: "☠" },
+  fail: { prefix: "FAIL", color: colors.red, icon: "✘" },
+  critical: {
+    prefix: "CRITICAL",
+    color: colors.white,
+    background: backgroundColors.red,
+    icon: "☠",
+  },
+  process: { prefix: "PROCESS", color: colors.cyan, icon: "⧗" },
 };
 
 export default config;
@@ -24,18 +41,20 @@ export const RESET: string = "\x1b[0m";
 export const dim: string = "\x1b[2m";
 export const tab: string = "\t";
 
-interface method {
-  text: string;
-  color: color;
-  icon: string;
+export interface options {
+  prefix?: string;
+  color?: color;
+  background?: color;
+  icon?: string;
 }
 export interface Config {
-  info: method;
-  success: method;
-  warning: method;
-  error: method;
-  fail: method;
-  watch: method;
+  info: options;
+  success: options;
+  warning: options;
+  error: options;
+  fail: options;
+  critical: options;
+  process: options;
 }
 
 type color = string;

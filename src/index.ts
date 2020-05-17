@@ -1,46 +1,55 @@
-import readline from "readline";
-
 import defaultConfig, {
   RESET,
   dim,
   tab,
   colors as defaultColors,
+  backgroundColors as defaultBackgroundColors,
   // eslint-disable-next-line no-unused-vars
   Config,
   // eslint-disable-next-line no-unused-vars
   Colors,
+  // eslint-disable-next-line no-unused-vars
+  options,
 } from "./config.js";
+import { Process } from "./Process.js";
 
-const LoadingBar = [
-  "▪▪▫▫▫▫▫",
-  "▪▪▪▫▫▫▫",
-  "▫▪▪▪▫▫▫",
-  "▫▫▪▪▪▫▫",
-  "▫▫▫▪▪▪▫",
-  "▫▫▫▫▪▪▪",
-  "▫▫▫▫▫▪▪",
-  "▪▪▪▪▪▪▪",
-];
+export const colors = defaultColors;
+export const background = defaultBackgroundColors;
+export const config = defaultColors;
 
-interface Logger {
+export interface Logger {
   id: string;
   config: Config;
   colors: Colors;
   start: number;
-  watchers: any[];
+  processes: any[];
   logOut: (x: string) => boolean;
   logErr: (x: string) => boolean;
-  info(...args: string[]): void;
-  success(...args: string[]): void;
-  warning(...args: string[]): void;
-  error(...args: string[]): void;
-  fail(...args: string[]): void;
-  watch(x: string, promise: () => Promise<any>): Watch;
-  _success(...args: string[]): void;
-  _error(...args: string[]): void;
+  info(log: string, { color, background, icon, prefix }?: options): void;
+  success(log: string, { color, background, icon, prefix }?: options): void;
+  warning(log: string, { color, background, icon, prefix }?: options): void;
+  error(log: string, { color, background, icon, prefix }?: options): void;
+  fail(log: string, { color, background, icon, prefix }?: options): void;
+  process(
+    text: string,
+    promise: () => Promise<any>,
+    ProcessOptions?: ProcessOptions
+  ): Process;
+  _success(log: string, { color, background, icon, prefix }?: options): void;
+  _error(log: string, { color, background, icon, prefix }?: options): void;
+  defaultOptions: {
+    color: string | undefined;
+    background: string | undefined;
+    icon: string | undefined;
+    prefix: string | undefined;
+  };
 }
 
-class Logger {
+export interface ProcessOptions extends options {
+  finishText: string;
+}
+
+export class Logger {
   constructor(
     id: string,
     config: Config = defaultConfig,
@@ -50,180 +59,189 @@ class Logger {
     this.config = config;
     this.colors = colors;
     this.start = Date.now();
-    this.watchers = [];
-    this.logOut = (...args: string[]) =>
-      process.stdout.write(`${args.join(" ")}${RESET}\n`);
-    this.logErr = (...args: string[]) =>
-      process.stderr.write(`${args.join(" ")}${RESET}\n`);
+    this.processes = [];
+    this.logOut = (log: string) => process.stdout.write(`${log}${RESET}\n`);
+    this.logErr = (log: string) => process.stderr.write(`${log}${RESET}\n`);
   }
 
-  public info = (...args: string[]) => {
-    this.pushWatchersUp();
+  public info = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.info.color,
+      background: this.config.info.background,
+      icon: this.config.info.icon,
+      prefix: this.config.info.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
     this.logOut(
-      `${this.firstPart(this.config.info.color, this.config.info.text)}${
-        this.config.info.icon
-      } ${args}`
+      `${this.firstPart({
+        color: color || this.config.info.color,
+        background: background || this.config.info.background,
+        icon: icon || this.config.info.icon,
+        prefix: prefix || this.config.info.prefix,
+      })}${log}`
     );
   };
 
-  public success = (...args: string[]) => {
-    this.pushWatchersUp();
-    this._success(...args);
+  public success = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.success.color,
+      background: this.config.success.background,
+      icon: this.config.success.icon,
+      prefix: this.config.success.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
+    this._success(log, { color, background, icon, prefix });
   };
 
-  public warning = (...args: string[]) => {
-    this.pushWatchersUp();
+  public warning = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.warning.color,
+      background: this.config.warning.background,
+      icon: this.config.warning.icon,
+      prefix: this.config.warning.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
     this.logErr(
-      `${this.firstPart(this.config.warning.color, this.config.warning.text)}${
-        this.config.warning.icon
-      } ${args}`
+      `${this.firstPart({
+        color: color || this.config.warning.color,
+        background: background || this.config.warning.background,
+        icon: icon || this.config.warning.icon,
+        prefix: prefix || this.config.warning.prefix,
+      })}${log}`
     );
   };
 
-  public error = (...args: string[]) => {
-    this.pushWatchersUp();
-    this._error(...args);
+  public error = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.error.color,
+      background: this.config.error.background,
+      icon: this.config.error.icon,
+      prefix: this.config.error.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
+    this._error(log, { color, background, icon, prefix });
   };
 
-  public fail = (...args: string[]) => {
-    this.pushWatchersUp();
+  public fail = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.fail.color,
+      background: this.config.fail.background,
+      icon: this.config.fail.icon,
+      prefix: this.config.fail.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
     this.logErr(
-      `${this.firstPart(this.config.fail.color, this.config.fail.text)}${
-        this.config.fail.icon
-      } ${args}`
+      `${this.firstPart({
+        color: color || this.config.fail.color,
+        background: background || this.config.fail.background,
+        icon: icon || this.config.fail.icon,
+        prefix: prefix || this.config.fail.prefix,
+      })}${log}`
     );
   };
 
-  public watch = (x: string, promise: () => Promise<any>) => {
-    this.pushWatchersUp();
-    const watcher = new Watch(this, x, promise);
-    this.watchers.push(watcher);
-    return watcher;
+  public critical = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.critical.color,
+      background: this.config.critical.background,
+      icon: this.config.critical.icon,
+      prefix: this.config.critical.prefix,
+    }
+  ) => {
+    this.pushprocessesUp();
+    this.logErr(
+      `${this.firstPart({
+        color: color || this.config.critical.color,
+        background: background || this.config.critical.background,
+        icon: icon || this.config.critical.icon,
+        prefix: prefix || this.config.critical.prefix,
+      })}${log}`
+    );
   };
 
-  public _success = (...args: string[]) => {
+  public process = (
+    text: string,
+    promise: () => Promise<any>,
+    processOptions: ProcessOptions = {
+      color: this.config.process.color,
+      background: this.config.process.background,
+      icon: this.config.process.icon,
+      prefix: this.config.process.prefix,
+      finishText: "",
+    }
+  ) => {
+    this.pushprocessesUp();
+    const processer = new Process(this, text, promise, processOptions);
+    this.processes.push(processer);
+    return processer;
+  };
+
+  public _success = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.success.color,
+      background: this.config.success.background,
+      icon: this.config.success.icon,
+      prefix: this.config.success.prefix,
+    }
+  ) => {
     this.logOut(
-      `${this.firstPart(this.config.success.color, this.config.success.text)}${
-        this.config.success.icon
-      } ${args}`
+      `${this.firstPart({
+        color: color || this.config.success.color,
+        background: background || this.config.success.background,
+        icon: icon || this.config.success.icon,
+        prefix: prefix || this.config.success.prefix,
+      })}${log}`
     );
   };
 
-  public _error = (...args: string[]) => {
+  public _error = (
+    log: string,
+    { color, background, icon, prefix }: options = {
+      color: this.config.error.color,
+      background: this.config.error.background,
+      icon: this.config.error.icon,
+      prefix: this.config.error.prefix,
+    }
+  ) => {
     this.logErr(
-      `${this.firstPart(this.config.error.color, this.config.error.text)}${
-        this.config.fail.icon
-      } ${args}`
+      `${this.firstPart({
+        color: color || this.config.error.color,
+        background: background || this.config.error.background,
+        icon: icon || this.config.error.icon,
+        prefix: prefix || this.config.error.prefix,
+      })}${log}`
     );
   };
 
-  private firstPart(color: string, str: string): string {
-    return `${color}${str}${this.colors.white}${dim}${tab} | ${
+  public firstPart({ color, prefix, background, icon }: options): string {
+    return `${color}${background || ""}${prefix}${RESET}${
+      this.colors.white
+    }${dim}${prefix ? (prefix.length < 8 ? tab : "") : ""}| ${
       this.id
-    } +${this.TimeSinceStart(this.start)}ms${tab} | ${RESET}${color} `;
+    } +${this.TimeSinceStart(this.start)}ms${tab}| ${RESET}${color}${
+      background || ""
+    }${icon} `;
   }
 
-  private TimeSinceStart = (start: number = this.start) => Date.now() - start;
+  public TimeSinceStart = (start: number = this.start) => Date.now() - start;
 
-  private pushWatchersUp() {
-    for (let i = 0; i < this.watchers.length; i++) {
-      this.watchers[i].pushUp();
+  private pushprocessesUp() {
+    for (let i = 0; i < this.processes.length; i++) {
+      this.processes[i].pushUp();
     }
   }
 }
 
 export default Logger;
-
-interface Watch {
-  logger: any;
-  colors: Colors;
-  config: Config;
-  animationN: number;
-  tick: number;
-  row: number;
-  timer: number;
-  firstPart: string;
-  pushUp(): void;
-}
-class Watch {
-  constructor(logger: any, x: string, promise: () => Promise<any>) {
-    this.logger = logger;
-    this.config = this.logger.config;
-    this.colors = this.logger.colors;
-    this.row = -1;
-    this.timer = Date.now();
-    this.animationN = 0;
-    this.tick = 0;
-    this.firstPart = this.logger.firstPart(
-      this.config.watch.color,
-      this.config.watch.text
-    );
-    this.moveToBottom();
-    this.logger.logOut(
-      `${this.firstPart}${this.config.watch.icon} ${LoadingBar[0]} [0ms] ${x}`
-    ); // inital write
-
-    const interval = setInterval(() => {
-      this.tick++;
-      if (this.tick > 10) {
-        this.animationN++;
-        this.tick = 0;
-      }
-      if (this.animationN >= 6) {
-        this.animationN = 0;
-      }
-      this.moveToRow();
-      this.logger.logOut(
-        `${this.firstPart}${this.config.watch.icon} ${
-          LoadingBar[this.animationN]
-        } [${this.coloredCounter()}${this.config.watch.color}] ${x}` // every "frame"
-      );
-      this.moveToBottom();
-    }, 10);
-
-    promise()
-      .then((output) => {
-        clearInterval(interval);
-        this.moveToRow();
-        this.logger._success(
-          `${LoadingBar[7]} [${this.coloredCounter()}${
-            this.config.success.color
-          }] ${x} | ${typeof output === "string" ? output : typeof output}`
-        );
-        this.moveToBottom();
-      })
-      .catch((reason: any) => {
-        clearInterval(interval);
-        this.moveToRow();
-        this.logger._error(
-          `${LoadingBar[7]} [${this.coloredCounter()}${
-            this.config.error.color
-          }] ${x} | ${reason}`
-        );
-        this.moveToBottom();
-      });
-  }
-
-  private coloredCounter() {
-    const timer = this.logger.TimeSinceStart(this.timer);
-    if (timer < 10) {
-      return `${this.colors.green}${timer}ms`;
-    } else if (timer < 50) {
-      return `${this.colors.yellow}${timer}ms`;
-    } else {
-      return `${this.colors.red}${timer}ms`;
-    }
-  }
-
-  private moveToBottom() {
-    readline.moveCursor(process.stdout, 0, this.logger.watchers.length);
-  }
-
-  private moveToRow() {
-    readline.moveCursor(process.stdout, 0, this.row);
-  }
-
-  public pushUp() {
-    this.row = this.row - 1;
-  }
-}
