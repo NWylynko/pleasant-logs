@@ -20,10 +20,12 @@ export const backgroundColors: Colors = {
   Magenta: "\x1b[44m",
 };
 
+// icons: ⚠ ℹ ✔ ☠ ✘ ⧗ !
+
 const config: Config = {
   info: { prefix: "INFO", color: colors.white, icon: "ℹ" },
   success: { prefix: "SUCCESS", color: colors.green, icon: "✔" },
-  warning: { prefix: "WARNING", color: colors.yellow, icon: "!" },
+  warning: { prefix: "WARNING", color: colors.yellow, icon: "⚠" },
   error: { prefix: "ERROR", color: colors.red, icon: "☠" },
   fail: { prefix: "FAIL", color: colors.red, icon: "✘" },
   critical: {
