@@ -82,8 +82,8 @@ export class Process {
             this.config.success.color
           }] ${this.options.finishText || this.text} ${
             output
-              ? "|" + typeof output === "string"
-                ? output
+              ? typeof output === "string"
+                ? "| " + output
                 : typeof output
               : ""
           }`
