@@ -80,23 +80,18 @@ export class Process {
         this.logger._success(
           `${LoadingBar[7]} [${this.coloredCounter()}${
             this.config.success.color
-          }] ${this.options.finishText || this.text} ${
-            output
-              ? typeof output === "string"
-                ? "| " + output
-                : typeof output
-              : ""
-          }`
+          }] ${this.options.finishText || this.text} ${this.stringOrOther(output)}`
         );
         this.moveToBottom();
       })
-      .catch((reason: any) => {
+      .catch((reason: Error) => {
         clearInterval(interval);
         this.moveToRow();
+        this.clearLine();
         this.logger._error(
           `${LoadingBar[7]} [${this.coloredCounter()}${
             this.config.error.color
-          }] ${this.text} | ${reason}`
+          }] ${this.text} ${reason ? this.stringOrOther(reason.message) : ''}`
         );
         this.moveToBottom();
       });
@@ -119,6 +114,20 @@ export class Process {
 
   private moveToRow() {
     readline.moveCursor(process.stdout, 0, this.row);
+  }
+
+  private clearLine() {
+    process.stdout.clearLine(0);
+  }
+
+  private stringOrOther(str: string) {
+    return `${
+      str
+        ? typeof str === "string"
+          ? "| " + str
+          : typeof str
+        : ""
+    }`;
   }
 
   public pushUp() {
