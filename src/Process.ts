@@ -5,6 +5,7 @@ import { Logger, ProcessOptions } from "./index";
 import { Config, Colors } from "./config.js";
 
 const LoadingBar: string[] = [
+  "▪▫▫▫▫▫▫",
   "▪▪▫▫▫▫▫",
   "▪▪▪▫▫▫▫",
   "▫▪▪▪▫▫▫",
@@ -12,6 +13,7 @@ const LoadingBar: string[] = [
   "▫▫▫▪▪▪▫",
   "▫▫▫▫▪▪▪",
   "▫▫▫▫▫▪▪",
+  "▫▫▫▫▫▫▪",
   "▪▪▪▪▪▪▪",
 ];
 
@@ -41,7 +43,7 @@ export class Process {
     this.options = processOptions;
     this.config = this.logger.config;
     this.colors = this.logger.colors;
-    this.row = -1;
+    this.row = 0;
     this.timer = Date.now();
     this.animationN = 0;
     this.tick = 0;
@@ -54,6 +56,7 @@ export class Process {
 
     this.moveToBottom();
     this.logger.logOut(`${this.firstPart}${LoadingBar[0]} [0ms] ${this.text}`); // inital write
+    this.row--;
 
     const interval = setInterval(() => {
       this.tick++;
@@ -61,7 +64,7 @@ export class Process {
         this.animationN++;
         this.tick = 0;
       }
-      if (this.animationN >= 6) {
+      if (this.animationN >= 8) {
         this.animationN = 0;
       }
       this.moveToRow();
@@ -78,9 +81,11 @@ export class Process {
         clearInterval(interval);
         this.moveToRow();
         this.logger._success(
-          `${LoadingBar[7]} [${this.coloredCounter()}${
+          `${LoadingBar[9]} [${this.coloredCounter()}${
             this.config.success.color
-          }] ${this.options.finishText || this.text} ${this.stringOrOther(output)}`
+          }] ${this.options.finishText || this.text} ${this.stringOrOther(
+            output
+          )}`
         );
         this.moveToBottom();
       })
@@ -89,9 +94,9 @@ export class Process {
         this.moveToRow();
         this.clearLine();
         this.logger._error(
-          `${LoadingBar[7]} [${this.coloredCounter()}${
+          `${LoadingBar[9]} [${this.coloredCounter()}${
             this.config.error.color
-          }] ${this.text} ${reason ? this.stringOrOther(reason.message) : ''}`
+          }] ${this.text} ${reason ? this.stringOrOther(reason.message) : ""}`
         );
         this.moveToBottom();
       });
@@ -110,27 +115,26 @@ export class Process {
 
   private moveToBottom() {
     readline.moveCursor(process.stdout, 0, this.logger.processes.length);
+    // readline.moveCursor(process.stderr, 0, this.logger.processes.length + 1);
   }
 
   private moveToRow() {
     readline.moveCursor(process.stdout, 0, this.row);
+    // readline.moveCursor(process.stderr, 0, this.row);
   }
 
   private clearLine() {
-    process.stdout.clearLine(0);
+    try {
+      process.stdout.clearLine(0);
+      // process.stderr.clearLine(0);
+    } catch (error) {}
   }
 
   private stringOrOther(str: string) {
-    return `${
-      str
-        ? typeof str === "string"
-          ? "| " + str
-          : typeof str
-        : ""
-    }`;
+    return `${str ? (typeof str === "string" ? "| " + str : typeof str) : ""}`;
   }
 
   public pushUp() {
-    this.row = this.row - 1;
+    this.row--;
   }
 }
