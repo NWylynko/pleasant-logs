@@ -73,7 +73,7 @@ export class Logger {
       prefix: this.config.info.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this.logOut(
       `${this.firstPart({
         color: color || this.config.info.color,
@@ -93,7 +93,7 @@ export class Logger {
       prefix: this.config.success.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this._success(log, { color, background, icon, prefix });
   };
 
@@ -106,7 +106,7 @@ export class Logger {
       prefix: this.config.warning.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this.logErr(
       `${this.firstPart({
         color: color || this.config.warning.color,
@@ -126,7 +126,7 @@ export class Logger {
       prefix: this.config.error.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this._error(log, { color, background, icon, prefix });
   };
 
@@ -139,7 +139,7 @@ export class Logger {
       prefix: this.config.fail.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this.logErr(
       `${this.firstPart({
         color: color || this.config.fail.color,
@@ -159,7 +159,7 @@ export class Logger {
       prefix: this.config.critical.prefix,
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     this.logErr(
       `${this.firstPart({
         color: color || this.config.critical.color,
@@ -181,7 +181,7 @@ export class Logger {
       finishText: "",
     }
   ) => {
-    this.pushprocessesUp();
+    this.pushProcessesUp();
     const processer = new Process(this, text, promise, processOptions);
     this.processes.push(processer);
     return processer;
@@ -237,7 +237,7 @@ export class Logger {
 
   public TimeSinceStart = (start: number = this.start) => Date.now() - start;
 
-  private pushprocessesUp() {
+  private pushProcessesUp() {
     for (let i = 0; i < this.processes.length; i++) {
       this.processes[i].pushUp();
     }

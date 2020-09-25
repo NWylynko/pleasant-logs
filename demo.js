@@ -4,7 +4,7 @@ const log = new Logger("test-logger");
 
 const resolvePromise = () => 
   new Promise(resolve => {
-    setTimeout(() => resolve("yo"), 3500);
+    setTimeout(resolve, 1500);
   });
 
 log.info("This is an info log");
