@@ -1,8 +1,6 @@
-import readline from "readline";
-// eslint-disable-next-line no-unused-vars
+import readline from "node:readline";
 import { Logger, ProcessOptions } from "./index";
-// eslint-disable-next-line no-unused-vars
-import { Config, Colors } from "./config.js";
+import { Config, Colors } from "./consts.js";
 
 const LoadingBar: string[] = [
   "▪▫▫▫▫▫▫",
@@ -69,8 +67,7 @@ export class Process {
       }
       this.moveToRow();
       this.logger.logOut(
-        `${this.firstPart}${
-          LoadingBar[this.animationN]
+        `${this.firstPart}${LoadingBar[this.animationN]
         } [${this.coloredCounter()}${this.config.process.color}] ${this.text}` // every "frame"
       );
       this.moveToBottom();
@@ -81,8 +78,7 @@ export class Process {
         clearInterval(interval);
         this.moveToRow();
         this.logger._success(
-          `${LoadingBar[9]} [${this.coloredCounter()}${
-            this.config.success.color
+          `${LoadingBar[9]} [${this.coloredCounter()}${this.config.success.color
           }] ${this.options.finishText || this.text} ${this.stringOrOther(
             output
           )}`
@@ -94,8 +90,7 @@ export class Process {
         this.moveToRow();
         this.clearLine();
         this.logger._error(
-          `${LoadingBar[9]} [${this.coloredCounter()}${
-            this.config.error.color
+          `${LoadingBar[9]} [${this.coloredCounter()}${this.config.error.color
           }] ${this.text} ${reason ? this.stringOrOther(reason.message) : ""}`
         );
         this.moveToBottom();
@@ -127,7 +122,7 @@ export class Process {
     try {
       process.stdout.clearLine(0);
       // process.stderr.clearLine(0);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   private stringOrOther(str: string) {

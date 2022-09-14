@@ -1,4 +1,4 @@
-import Logger from "./dist/index.js";
+import Logger from "pleasant-logs";
 
 const log = new Logger("test-logger");
 

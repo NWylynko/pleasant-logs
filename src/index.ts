@@ -1,16 +1,15 @@
+import "source-map-support/register.js"
+
 import defaultConfig, {
   RESET,
   dim,
   tab,
   colors as defaultColors,
   backgroundColors as defaultBackgroundColors,
-  // eslint-disable-next-line no-unused-vars
   Config,
-  // eslint-disable-next-line no-unused-vars
   Colors,
-  // eslint-disable-next-line no-unused-vars
   options,
-} from "./config.js";
+} from "./consts.js";
 import { Process } from "./Process.js";
 
 export const colors = defaultColors;
@@ -226,13 +225,10 @@ export class Logger {
   };
 
   public firstPart({ color, prefix, background, icon }: options): string {
-    return `${color}${background || ""}${prefix}${RESET}${
-      this.colors.white
-    }${dim}${prefix ? (prefix.length < 8 ? tab : "") : ""}| ${
-      this.id
-    } +${this.TimeSinceStart(this.start)}ms${tab}| ${RESET}${color}${
-      background || ""
-    }${icon} `;
+    return `${color}${background || ""}${prefix}${RESET}${this.colors.white
+      }${dim}${prefix ? (prefix.length < 8 ? tab : "") : ""}| ${this.id
+      } +${this.TimeSinceStart(this.start)}ms${tab}| ${RESET}${color}${background || ""
+      }${icon} `;
   }
 
   public TimeSinceStart = (start: number = this.start) => Date.now() - start;
