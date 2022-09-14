@@ -17,6 +17,7 @@
   "scripts": {
     "demo": "node demo.js",
     "build": "microbundle",
+    "dev": "microbundle watch",
     "bump": "npx bumpp"
   },
   "repository": "github:nwylynko/pleasant-logs",
