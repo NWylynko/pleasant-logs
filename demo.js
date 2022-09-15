@@ -13,4 +13,4 @@ log.warning("This is a warning log");
 log.error("This is a error log");
 log.fail("This is a fail log");
 log.critical("This is a critical log")
-log.process("This will take a while", resolvePromise, { finishText: "Successfully finished task" });
+log.process("This will take a while", resolvePromise(), { finishText: "Successfully finished task" });

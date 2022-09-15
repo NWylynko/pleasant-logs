@@ -43,20 +43,20 @@ export const RESET: string = "\x1b[0m";
 export const dim: string = "\x1b[2m";
 export const tab: string = "\t";
 
-export interface Options {
+export interface Option {
   prefix?: string;
   color?: color;
   background?: color;
   icon?: string;
 }
 export interface Config {
-  info: Options;
-  success: Options;
-  warning: Options;
-  error: Options;
-  fail: Options;
-  critical: Options;
-  process: Options;
+  info: Option;
+  success: Option;
+  warning: Option;
+  error: Option;
+  fail: Option;
+  critical: Option;
+  process: Option;
 }
 
 type color = string;

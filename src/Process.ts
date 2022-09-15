@@ -1,6 +1,6 @@
 import shortid from 'shortid';
 import readline from "node:readline";
-import { Colors, Config, Options } from "./consts";
+import { Colors, Config, Option } from "./consts";
 import { logOut } from "./rawLog";
 import { TimeSinceStart } from "./TimeSinceStart";
 import merge from "lodash-es/merge"
@@ -18,22 +18,22 @@ const LoadingBar: string[] = [
   "▪▪▪▪▪▪▪",
 ];
 
-export interface ProcessOptions extends Options {
+export interface ProcessOptions extends Option {
   finishText: string;
 }
 
 interface Functions {
-  firstPart: ({ color, prefix, background, icon }: Options) => string;
+  firstPart: ({ color, prefix, background, icon }: Option) => string;
   config: Config;
   processes: Map<string, Processor>;
-  _success: (log: string, options?: Options) => void;
-  _error: (log: string, options?: Options) => void;
+  _success: (log: string, options?: Option) => void;
+  _error: (log: string, options?: Option) => void;
   colors: Colors;
 }
 
-export const createProcess = (logger: Functions) => (
+export const createProcess = (logger: Functions) => <PromiseResult,>(
   text: string,
-  promise: () => Promise<any>,
+  promise: Promise<PromiseResult>,
   options: ProcessOptions
 ) => {
   let row = 0;
@@ -62,7 +62,7 @@ export const createProcess = (logger: Functions) => (
     } catch (error) { }
   }
 
-  const stringOrOther = (str: string) => {
+  const stringOrOther = (str: any) => {
     return `${str ? (typeof str === "string" ? "| " + str : typeof str) : ""}`;
   }
 
@@ -92,7 +92,7 @@ export const createProcess = (logger: Functions) => (
     moveToBottom();
   }, 10);
 
-  promise()
+  promise
     .then((output) => {
       clearInterval(interval);
       moveToRow();
@@ -128,7 +128,8 @@ export const createProcess = (logger: Functions) => (
 
   const processor = {
     id,
-    pushUp
+    pushUp,
+    promise
   }
 
   return processor
