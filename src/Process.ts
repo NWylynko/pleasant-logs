@@ -1,6 +1,7 @@
 import readline from "node:readline";
-import { Logger, ProcessOptions } from "./index";
-import { Config, Colors } from "./consts.js";
+import { Colors, Config, Options } from "./consts";
+import { LoggerFunctions } from "./index";
+import { TimeSinceStart } from "./TimeSinceStart";
 
 const LoadingBar: string[] = [
   "▪▫▫▫▫▫▫",
@@ -15,8 +16,12 @@ const LoadingBar: string[] = [
   "▪▪▪▪▪▪▪",
 ];
 
+export interface ProcessOptions extends Options {
+  finishText: string;
+}
+
 export interface Process {
-  logger: Logger;
+  logger: LoggerFunctions;
   text: string;
   options: ProcessOptions;
   colors: Colors;
@@ -31,7 +36,7 @@ export interface Process {
 
 export class Process {
   constructor(
-    logger: Logger,
+    logger: LoggerFunctions,
     text: string,
     promise: () => Promise<any>,
     processOptions: ProcessOptions
@@ -98,7 +103,7 @@ export class Process {
   }
 
   private coloredCounter() {
-    const timer = this.logger.TimeSinceStart(this.timer);
+    const timer = TimeSinceStart(this.timer);
     if (timer < 10) {
       return `${this.colors.green}${timer}ms`;
     } else if (timer < 50) {
