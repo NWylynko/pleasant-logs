@@ -93,7 +93,7 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
       moveToRow();
       logger._success(
         `${LoadingBar[9]} [${colouredCounter()}${logger.config.success.color
-        }] ${options.finishText || text} ${handleMessage(
+        }] ${options.finishText || text} | ${handleMessage(
           output
         )}`
       );
@@ -105,7 +105,7 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
       clearLine();
       logger._error(
         `${LoadingBar[9]} [${colouredCounter()}${logger.config.error.color
-        }] ${text} ${reason ? handleMessage(reason.message) : ""}`
+        }] ${text} | ${reason ? handleMessage(reason.message) : ""}`
       );
       moveToBottom();
     });
@@ -129,5 +129,4 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
 
   return processor
 }
-
 export type Processor = ReturnType<ReturnType<typeof createProcess>>;
