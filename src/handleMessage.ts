@@ -43,20 +43,9 @@ const objectHandler: Handler<object> = (message) => {
 
 const functionHandler: Handler<MessageFunctions<BaseTypes>> = (message) => {
 
-  const isAsync = message.constructor.name === "AsyncFunction";
+  const result = message()
 
-  if (isAsync) {
-
-    return new Promise<string>(async (resolve) => {
-      const result = await message();
-      resolve(handleMessage(result))
-    })
-
-  } else {
-
-    return handleMessage(message());
-
-  }
+  return handleMessage(result);
 
 }
 
@@ -72,10 +61,27 @@ const handlers: Handlers = {
 }
 
 export function handleMessage(message: () => Promise<BaseTypes>): Promise<string>
+export function handleMessage(message: Promise<BaseTypes>): Promise<string>
 export function handleMessage(message: () => BaseTypes): string
 export function handleMessage(message: BaseTypes): string
 export function handleMessage(message: Message) {
+
+  const isAsync = message?.constructor?.name === "AsyncFunction";
+  const isPromise = message?.constructor?.name === "Promise";
+
   const type = typeof message
+
+  if (isAsync) {
+    return new Promise<string>(async (resolve) => {
+      const result = await message();
+      resolve(handleMessage(result))
+    })
+  } else if (isPromise) {
+    return new Promise<string>(async (resolve) => {
+      const result = await message;
+      resolve(handleMessage(result))
+    })
+  }
 
   return handlers[type](message)
 }
