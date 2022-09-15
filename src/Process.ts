@@ -4,6 +4,7 @@ import { Colors, Config, Option } from "./consts";
 import { logOut } from "./rawLog";
 import { TimeSinceStart } from "./TimeSinceStart";
 import merge from "lodash-es/merge"
+import { handleMessage } from './handleMessage';
 
 const LoadingBar: string[] = [
   "▪▫▫▫▫▫▫",
@@ -62,13 +63,7 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
     } catch (error) { }
   }
 
-  const stringOrOther = (str: any) => {
-    return `${str ? (typeof str === "string" ? "| " + str : typeof str) : ""}`;
-  }
-
-  const pushUp = () => {
-    row--;
-  }
+  const pushUp = () => row--
 
   moveToBottom();
 
@@ -98,7 +93,7 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
       moveToRow();
       logger._success(
         `${LoadingBar[9]} [${colouredCounter()}${logger.config.success.color
-        }] ${options.finishText || text} ${stringOrOther(
+        }] ${options.finishText || text} ${handleMessage(
           output
         )}`
       );
@@ -110,7 +105,7 @@ export const createProcess = (logger: Functions) => <PromiseResult,>(
       clearLine();
       logger._error(
         `${LoadingBar[9]} [${colouredCounter()}${logger.config.error.color
-        }] ${text} ${reason ? stringOrOther(reason.message) : ""}`
+        }] ${text} ${reason ? handleMessage(reason.message) : ""}`
       );
       moveToBottom();
     });
