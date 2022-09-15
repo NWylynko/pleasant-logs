@@ -1,6 +1,7 @@
+import shortid from 'shortid';
 import readline from "node:readline";
 import { Colors, Config, Options } from "./consts";
-import { LoggerFunctions } from "./index";
+import { logOut } from "./rawLog";
 import { TimeSinceStart } from "./TimeSinceStart";
 
 const LoadingBar: string[] = [
@@ -20,121 +21,120 @@ export interface ProcessOptions extends Options {
   finishText: string;
 }
 
-export interface Process {
-  logger: LoggerFunctions;
-  text: string;
-  options: ProcessOptions;
-  colors: Colors;
+interface Functions {
+  firstPart: ({ color, prefix, background, icon }: Options) => string;
   config: Config;
-  animationN: number;
-  tick: number;
-  row: number;
-  timer: number;
-  firstPart: string;
-  pushUp(): void;
+  processes: Map<string, Processor>;
+  _success: (log: string, options?: Options) => void;
+  _error: (log: string, options?: Options) => void;
+  colors: Colors;
 }
 
-export class Process {
-  constructor(
-    logger: LoggerFunctions,
-    text: string,
-    promise: () => Promise<any>,
-    processOptions: ProcessOptions
-  ) {
-    this.logger = logger;
-    this.text = text;
-    this.options = processOptions;
-    this.config = this.logger.config;
-    this.colors = this.logger.colors;
-    this.row = 0;
-    this.timer = Date.now();
-    this.animationN = 0;
-    this.tick = 0;
-    this.firstPart = this.logger.firstPart({
-      color: this.options.color || this.config.process.color,
-      background: this.options.background || this.config.process.background,
-      icon: this.options.icon || this.config.process.icon,
-      prefix: this.options.prefix || this.config.process.prefix,
-    });
+export const createProcess = (logger: Functions) => (
 
-    this.moveToBottom();
-    this.logger.logOut(`${this.firstPart}${LoadingBar[0]} [0ms] ${this.text}`); // inital write
-    this.row--;
+  text: string,
+  promise: () => Promise<any>,
+  options: ProcessOptions
+) => {
+  let row = 0;
+  const timer = Date.now()
+  let animationN = 0;
+  let tick = 0;
+  const id = shortid.generate()
 
-    const interval = setInterval(() => {
-      this.tick++;
-      if (this.tick > 10) {
-        this.animationN++;
-        this.tick = 0;
-      }
-      if (this.animationN >= 8) {
-        this.animationN = 0;
-      }
-      this.moveToRow();
-      this.logger.logOut(
-        `${this.firstPart}${LoadingBar[this.animationN]
-        } [${this.coloredCounter()}${this.config.process.color}] ${this.text}` // every "frame"
-      );
-      this.moveToBottom();
-    }, 10);
+  const firstPart = logger.firstPart({
+    ...logger.config.process,
+    ...options
+  })
 
-    promise()
-      .then((output) => {
-        clearInterval(interval);
-        this.moveToRow();
-        this.logger._success(
-          `${LoadingBar[9]} [${this.coloredCounter()}${this.config.success.color
-          }] ${this.options.finishText || this.text} ${this.stringOrOther(
-            output
-          )}`
-        );
-        this.moveToBottom();
-      })
-      .catch((reason: Error) => {
-        clearInterval(interval);
-        this.moveToRow();
-        this.clearLine();
-        this.logger._error(
-          `${LoadingBar[9]} [${this.coloredCounter()}${this.config.error.color
-          }] ${this.text} ${reason ? this.stringOrOther(reason.message) : ""}`
-        );
-        this.moveToBottom();
-      });
+  const moveToBottom = () => {
+    readline.moveCursor(process.stdout, 0, logger.processes.keys.length);
+    // readline.moveCursor(process.stderr, 0, logger.processes.length + 1);
   }
 
-  private coloredCounter() {
-    const timer = TimeSinceStart(this.timer);
-    if (timer < 10) {
-      return `${this.colors.green}${timer}ms`;
-    } else if (timer < 50) {
-      return `${this.colors.yellow}${timer}ms`;
-    } else {
-      return `${this.colors.red}${timer}ms`;
-    }
+
+  const moveToRow = () => {
+    readline.moveCursor(process.stdout, 0, row);
+    // readline.moveCursor(process.stderr, 0, row);
   }
 
-  private moveToBottom() {
-    readline.moveCursor(process.stdout, 0, this.logger.processes.length);
-    // readline.moveCursor(process.stderr, 0, this.logger.processes.length + 1);
-  }
-
-  private moveToRow() {
-    readline.moveCursor(process.stdout, 0, this.row);
-    // readline.moveCursor(process.stderr, 0, this.row);
-  }
-
-  private clearLine() {
+  const clearLine = () => {
     try {
       process.stdout.clearLine(0);
       // process.stderr.clearLine(0);
     } catch (error) { }
   }
 
-  private stringOrOther(str: string) {
+  const stringOrOther = (str: string) => {
     return `${str ? (typeof str === "string" ? "| " + str : typeof str) : ""}`;
   }
 
-  public pushUp() {
-    this.row--;
+  const pushUp = () => {
+    row--;
   }
+
+  moveToBottom();
+
+  logOut(`${firstPart}${LoadingBar[0]} [0ms] ${text}`); // initial write
+  pushUp();
+
+  const interval = setInterval(() => {
+    tick++;
+    if (tick > 10) {
+      animationN++;
+      tick = 0;
+    }
+    if (animationN >= 8) {
+      animationN = 0;
+    }
+    moveToRow();
+    logOut(
+      `${firstPart}${LoadingBar[animationN]
+      } [${colouredCounter()}${logger.config.process.color}] ${text}` // every "frame"
+    );
+    moveToBottom();
+  }, 10);
+
+  promise()
+    .then((output) => {
+      clearInterval(interval);
+      moveToRow();
+      logger._success(
+        `${LoadingBar[9]} [${colouredCounter()}${logger.config.success.color
+        }] ${options.finishText || text} ${stringOrOther(
+          output
+        )}`
+      );
+      moveToBottom();
+    })
+    .catch((reason: Error) => {
+      clearInterval(interval);
+      moveToRow();
+      clearLine();
+      logger._error(
+        `${LoadingBar[9]} [${colouredCounter()}${logger.config.error.color
+        }] ${text} ${reason ? stringOrOther(reason.message) : ""}`
+      );
+      moveToBottom();
+    });
+
+  const colouredCounter = () => {
+    const time = TimeSinceStart(timer);
+    if (time < 10) {
+      return `${logger.colors.green}${time}ms`;
+    } else if (time < 50) {
+      return `${logger.colors.yellow}${time}ms`;
+    } else {
+      return `${logger.colors.red}${time}ms`;
+    }
+  }
+
+  const processor = {
+    id,
+    pushUp
+  }
+
+  return processor
 }
+
+export type Processor = ReturnType<ReturnType<typeof createProcess>>;

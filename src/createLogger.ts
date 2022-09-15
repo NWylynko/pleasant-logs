@@ -6,9 +6,9 @@ import defaultConfig, {
   Colors,
   Options
 } from "./consts";
-import { Process, ProcessOptions } from "./Process";
+import { logOut, logErr } from "./rawLog";
+import { createProcess, ProcessOptions, Processor } from "./Process";
 import { TimeSinceStart } from "./TimeSinceStart";
-
 
 export const createLogger = (
   id: string,
@@ -17,10 +17,7 @@ export const createLogger = (
 ) => {
 
   const start = Date.now();
-  const processes: Process[] = [];
-
-  const logOut = (log: string) => process.stdout.write(`${log}${RESET}\n`);
-  const logErr = (log: string) => process.stderr.write(`${log}${RESET}\n`);
+  const processes = new Map<string, Processor>()
 
   const info = (
     log: string,
@@ -78,6 +75,7 @@ export const createLogger = (
     );
   };
 
+  // this can't be called process as their is the global process object
   const _process = (
     text: string,
     promise: () => Promise<any>,
@@ -87,9 +85,18 @@ export const createLogger = (
     }
   ) => {
     pushProcessesUp();
-    const processer = new Process(logger, text, promise, options);
-    processes.push(processer);
-    return processer;
+    const functions = {
+      firstPart,
+      config,
+      processes,
+      logOut,
+      _success,
+      _error,
+      colors
+    }
+    const processor = createProcess(functions)(text, promise, options);
+    processes.set(processor.id, processor);
+    return processor;
   };
 
   const _success = (
@@ -115,19 +122,13 @@ export const createLogger = (
   };
 
   const pushProcessesUp = () => {
-    for (let i = 0; i < processes.length; i++) {
-      processes[i].pushUp();
+    for (let [id, process] of processes) {
+      process.pushUp()
     }
   };
 
   const logger = {
     id,
-    config,
-    colors,
-    start,
-    processes,
-    logOut,
-    logErr,
     info,
     success,
     warning,
@@ -135,9 +136,6 @@ export const createLogger = (
     fail,
     critical,
     process: _process,
-    firstPart,
-    _success,
-    _error
   };
 
   return logger;

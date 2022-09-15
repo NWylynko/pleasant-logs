@@ -24,11 +24,13 @@
   "author": "Nick Wylynko <nick@wylynko.com>",
   "license": "MIT",
   "dependencies": {
+    "shortid": "^2.2.16",
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
     "@types/node": "^18.7.18",
+    "@types/shortid": "^0.0.29",
     "microbundle": "^0.15.1",
     "typescript": "^4.8.3"
   },
