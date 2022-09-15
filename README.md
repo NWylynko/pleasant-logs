@@ -1,31 +1,29 @@
 # pleasant-logs
 
-Colourful nice logs for javascript
+Colourful, beautiful, and helpful logging
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/271f1e6ecdf641c6a93a5c9495c84f7b)](https://app.codacy.com/manual/nick1014375/pleasant-logs?utm_source=github.com&utm_medium=referral&utm_content=NWylynko/pleasant-logs&utm_campaign=Badge_Grade_Dashboard)
-
-[![NPM](https://nodei.co/npm/pleasant-logs.png)](https://www.npmjs.com/package/pleasant-logs)
+## Features
+ - Multiple different log types
+ - Handles every type
+ - Handles promises (async/await)
+ - Fully customisable
 
 ```bash
 npm i pleasant-logs
-```
-
-```bash
 yarn add pleasant-logs
+pnpm add pleasant-logs
+bun add pleasant-logs
 ```
 
 ```javascript
+import { createLogger } from "pleasant-logs";
 
-import Logger from 'pleasant-logs';
-
-const log = new Logger('name');
+const log = createLogger("test-logger");
 
 log.info("hello world");
-
 ```
 
-An unofficial port of <https://github.com/kkristof200/colored_logs>
+![demo](demo.gif)
+Here's an example of every log type, with each logging a string.
 
-Has bugs and not exactly the cleanest code, but if you'd like to work on it please fork it
-
-![screenshot](pleasant-logs.gif)
+A port of <https://github.com/kkristof200/colored_logs>
