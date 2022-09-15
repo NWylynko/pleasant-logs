@@ -3,6 +3,7 @@ import readline from "node:readline";
 import { Colors, Config, Options } from "./consts";
 import { logOut } from "./rawLog";
 import { TimeSinceStart } from "./TimeSinceStart";
+import merge from "lodash-es/merge"
 
 const LoadingBar: string[] = [
   "▪▫▫▫▫▫▫",
@@ -31,7 +32,6 @@ interface Functions {
 }
 
 export const createProcess = (logger: Functions) => (
-
   text: string,
   promise: () => Promise<any>,
   options: ProcessOptions
@@ -42,10 +42,7 @@ export const createProcess = (logger: Functions) => (
   let tick = 0;
   const id = shortid.generate()
 
-  const firstPart = logger.firstPart({
-    ...logger.config.process,
-    ...options
-  })
+  const firstPart = logger.firstPart(merge(logger.config.process, options))
 
   const moveToBottom = () => {
     readline.moveCursor(process.stdout, 0, logger.processes.keys.length);

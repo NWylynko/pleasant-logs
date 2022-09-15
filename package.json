@@ -24,11 +24,13 @@
   "author": "Nick Wylynko <nick@wylynko.com>",
   "license": "MIT",
   "dependencies": {
+    "lodash-es": "^4.17.21",
     "shortid": "^2.2.16",
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
+    "@types/lodash-es": "^4.17.6",
     "@types/node": "^18.7.18",
     "@types/shortid": "^0.0.29",
     "microbundle": "^0.15.1",

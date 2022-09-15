@@ -9,6 +9,7 @@ import defaultConfig, {
 import { logOut, logErr } from "./rawLog";
 import { createProcess, ProcessOptions, Processor } from "./Process";
 import { TimeSinceStart } from "./TimeSinceStart";
+import merge from "lodash-es/merge"
 
 export const createLogger = (
   id: string,
@@ -25,7 +26,7 @@ export const createLogger = (
   ) => {
     pushProcessesUp();
     logOut(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.info, options))}${log}`
     );
   };
 
@@ -34,7 +35,7 @@ export const createLogger = (
     options: Options = config.success
   ) => {
     pushProcessesUp();
-    _success(log, options);
+    _success(log, merge(config.success, options));
   };
 
   const warning = (
@@ -43,7 +44,7 @@ export const createLogger = (
   ) => {
     pushProcessesUp();
     logErr(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.warning, options))}${log}`
     );
   };
 
@@ -52,7 +53,7 @@ export const createLogger = (
     options: Options = config.error
   ) => {
     pushProcessesUp();
-    _error(log, options);
+    _error(log, merge(config.error, options));
   };
 
   const fail = (
@@ -61,7 +62,7 @@ export const createLogger = (
   ) => {
     pushProcessesUp();
     logErr(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.fail, options))}${log}`
     );
   };
 
@@ -71,7 +72,7 @@ export const createLogger = (
   ) => {
     pushProcessesUp();
     logErr(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.critical, options))}${log}`
     );
   };
 
@@ -94,7 +95,7 @@ export const createLogger = (
       _error,
       colors
     }
-    const processor = createProcess(functions)(text, promise, options);
+    const processor = createProcess(functions)(text, promise, merge(config.process, options));
     processes.set(processor.id, processor);
     return processor;
   };
@@ -104,7 +105,7 @@ export const createLogger = (
     options: Options = config.success
   ) => {
     logOut(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.success, options))}${log}`
     );
   };
 
@@ -113,12 +114,15 @@ export const createLogger = (
     options: Options = config.error
   ) => {
     logErr(
-      `${firstPart(options)}${log}`
+      `${firstPart(merge(config.error, options))}${log}`
     );
   };
 
   const firstPart = ({ color, prefix, background, icon }: Options): string => {
-    return `${color}${background || ""}${prefix}${RESET}${colors.white}${dim}${prefix ? (prefix.length < 8 ? tab : "") : ""}| ${id} +${TimeSinceStart(start)}ms${tab}| ${RESET}${color}${background || ""}${icon} `;
+    const fullPrefix = `${color}${background || ""}${prefix}${RESET}`
+    const y = `${colors.white}${dim}${prefix ? (prefix.length < 8 ? tab : "") : ""}| ${id} +${TimeSinceStart(start)}ms${tab}| ${RESET}${color}${background || ""}${icon} `;
+
+    return fullPrefix + y
   };
 
   const pushProcessesUp = () => {
