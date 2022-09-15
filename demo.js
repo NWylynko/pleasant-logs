@@ -1,6 +1,6 @@
-import Logger from "pleasant-logs";
+import { createLogger } from "pleasant-logs";
 
-const log = new Logger("test-logger");
+const log = createLogger("test-logger");
 
 const resolvePromise = () => 
   new Promise(resolve => {
